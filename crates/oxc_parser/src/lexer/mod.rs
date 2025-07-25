@@ -16,6 +16,7 @@ use crate::{UniquePromise, diagnostics};
 
 mod byte_handlers;
 mod comment;
+mod gperf_keywords;
 mod identifier;
 mod jsx;
 mod kind;
