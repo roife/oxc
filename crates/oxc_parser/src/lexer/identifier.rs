@@ -50,7 +50,7 @@ impl<'a> Lexer<'a> {
     pub(super) unsafe fn identifier_name_handler(&mut self) -> &'a str {
         // Advance past 1st byte.
         // SAFETY: Caller guarantees not at EOF, and next byte is ASCII.
-        let after_first = unsafe { self.source.position().add(1) };
+        let after_first = unsafe { self.source.position() };
 
         // Consume bytes which are part of identifier
         let next_byte = byte_search! {
