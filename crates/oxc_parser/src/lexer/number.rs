@@ -100,22 +100,90 @@ fn parse_decimal(s: &str) -> f64 {
     const MAX_FAST_DECIMAL_LEN: usize = 19;
 
     debug_assert!(!s.is_empty());
+    let len = s.len();
     if s.len() > MAX_FAST_DECIMAL_LEN {
         return parse_decimal_slow(s);
     }
 
     let mut result = 0_u64;
-    for &b in s.as_bytes() {
-        // The latency of the multiplication can be hidden by issuing it
-        // before the result is needed to improve performance on
-        // modern out-of-order CPU as multiplication here is slower
-        // than the other instructions, we can get the end result faster
-        // doing multiplication first and let the CPU spends other cycles
-        // doing other computation and get multiplication result later.
-        result *= 10;
-        let n = decimal_byte_to_value(b);
-        result += n as u64;
+    let s = s.as_bytes();
+    fallthrough! { len,
+        19 => result = decimal_byte_to_value(unsafe { *s.get_unchecked(len - 19) }) as u64,
+        'eighteen: 18 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 18) }) as u64;
+        },
+        'seventeen: 17 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 17) }) as u64;
+        },
+        'sixteen: 16 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 16) }) as u64;
+        },
+        'fifteen: 15 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 15) }) as u64;
+        },
+        'fourteen: 14 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 14) }) as u64;
+        },
+        'thirteen: 13 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 13) }) as u64;
+        },
+        'twelve: 12 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 12) }) as u64;
+        },
+        'eleven: 11 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 11) }) as u64;
+        },
+        'ten: 10 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 10) }) as u64;
+        },
+        'nine: 9 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 9) }) as u64;
+        },
+        'eight: 8 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 8) }) as u64;
+        },
+        'seven: 7 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 7) }) as u64;
+        },
+        'six: 6 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 6) }) as u64;
+        },
+        'five: 5 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 5) }) as u64;
+        },
+        'four: 4 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 4) }) as u64;
+        },
+        'three: 3 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 3) }) as u64;
+        },
+        'two: 2 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 2) }) as u64;
+        },
+        'one: 1 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 1) }) as u64;
+        },
+        'otherwise: _ => {},
     }
+
     result as f64
 }
 
