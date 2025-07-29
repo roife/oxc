@@ -14,6 +14,36 @@ use oxc_span::{Atom, format_atom};
 
 use super::kind::Kind;
 
+
+macro_rules! fallthrough {
+    ($scrutinee:expr $(,)?) => {
+        match $scrutinee {}
+    };
+    ($scrutinee:expr, $first_pat:pat => $first_body:expr $(, $label:lifetime $(: $pat:pat => $body:expr)?)* $(,)?) => {
+        fallthrough_rec!{ (match $scrutinee {
+            $first_pat => $first_body,
+            $($($pat => break $label,)?)*
+        }), $($label $(: ($body))?),* }
+    };
+}
+
+macro_rules! fallthrough_rec {
+    (($($acc:tt)*),) => {$($acc)*};
+    (($($acc:tt)*), $label:lifetime) => {
+        $label: {
+            $($acc)*
+        }
+    };
+    (($($acc:tt)*), $label:lifetime: ($($body:tt)*) $(,$($follow:tt)*)? ) => {
+
+        fallthrough_rec!{($label: {
+                $($acc)*
+            }
+            $($body)*
+        ), $($($follow)*)?}
+    };
+}
+
 pub fn parse_int(s: &str, kind: Kind, has_sep: bool) -> Result<f64, &'static str> {
     match kind {
         Kind::Decimal => {
@@ -96,17 +126,88 @@ fn parse_decimal_with_underscores(s: &str) -> f64 {
     const MAX_FAST_DECIMAL_LEN: usize = 19;
 
     debug_assert!(!s.is_empty());
+    let len = s.len();
     if s.len() > MAX_FAST_DECIMAL_LEN {
         return parse_decimal_slow(&s.cow_replace('_', ""));
     }
 
     let mut result = 0_u64;
-    for &b in s.as_bytes() {
-        if b != b'_' {
+    let s = s.as_bytes();
+    fallthrough! { len,
+        19 => result = decimal_byte_to_value(unsafe { *s.get_unchecked(len - 19) }) as u64,
+        'eighteen: 18 => {
             result *= 10;
-            let n = decimal_byte_to_value(b);
-            result += n as u64;
-        }
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 18) }) as u64;
+        },
+        'seventeen: 17 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 17) }) as u64;
+        },
+        'sixteen: 16 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 16) }) as u64;
+        },
+        'fifteen: 15 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 15) }) as u64;
+        },
+        'fourteen: 14 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 14) }) as u64;
+        },
+        'thirteen: 13 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 13) }) as u64;
+        },
+        'twelve: 12 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 12) }) as u64;
+        },
+        'eleven: 11 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 11) }) as u64;
+        },
+        'ten: 10 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 10) }) as u64;
+        },
+        'nine: 9 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 9) }) as u64;
+        },
+        'eight: 8 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 8) }) as u64;
+        },
+        'seven: 7 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 7) }) as u64;
+        },
+        'six: 6 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 6) }) as u64;
+        },
+        'five: 5 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 5) }) as u64;
+        },
+        'four: 4 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 4) }) as u64;
+        },
+        'three: 3 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 3) }) as u64;
+        },
+        'two: 2 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 2) }) as u64;
+        },
+        'one: 1 => {
+            result *= 10;
+            result += decimal_byte_to_value(unsafe { *s.get_unchecked(len - 1) }) as u64;
+        },
+        'otherwise: _ => {},
     }
     result as f64
 }
